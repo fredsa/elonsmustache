@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.sceneform.samples.augmentedfaces;
+package fredsa.elonsmustache;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -37,12 +37,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * This is an example activity that uses the Sceneform UX package to make common Augmented Faces
- * tasks easier.
- */
-public class AugmentedFacesActivity extends AppCompatActivity {
-  private static final String TAG = AugmentedFacesActivity.class.getSimpleName();
+public class MainActivity extends AppCompatActivity {
+  private static final String TAG = MainActivity.class.getSimpleName();
 
   private static final double MIN_OPENGL_VERSION = 3.0;
 
