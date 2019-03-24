@@ -57,9 +57,6 @@ public class MainActivity extends AppCompatActivity {
 
     private FaceArFragment arFragment;
 
-//    private ModelRenderable faceRegionsRenderable;
-//    private Texture faceMeshTexture;
-
     private Texture mustacheTexture;
     private Material mustacheMaterial;
     private Renderable mustacheRenderable;
@@ -68,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
-    // CompletableFuture requires api level 24
-    // FutureReturnValueIgnored is not valid
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -153,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                             case TRACKING:
                                 faceNode.setEnabled(true);
                                 FloatBuffer vertices = face.getMeshVertices();
-                                
+
                                 // Right below the nose.
                                 Vector3 pos164 = getPos(vertices, 164);
 
@@ -161,7 +156,8 @@ public class MainActivity extends AppCompatActivity {
                                 Vector3 pos0 = getPos(vertices, 0);
 
                                 // Mustache location.
-                                Vector3 pos = Vector3.add(pos164, pos0).scaled(.5f);
+                                float placement = .25f;
+                                Vector3 pos = Vector3.add(pos164.scaled(placement), pos0.scaled(1f - placement));
 
                                 Node mustacheNode = faceNode.getChildren().get(2);
                                 mustacheNode.setLocalPosition(pos);
@@ -170,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
     }
-
 
     private static ModelRenderable makePlane(Vector3 size, Material material) {
         Vector3 extents = size.scaled(0.5F);

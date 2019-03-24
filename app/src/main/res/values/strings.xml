@@ -16,4 +16,6 @@
 -->
 <resources>
     <string name="app_name">Elon\'s Mustache</string>
+    <string name="face_caption1">definitely not</string>
+    <string name="face_caption2">Elon Musk</string>
 </resources>
