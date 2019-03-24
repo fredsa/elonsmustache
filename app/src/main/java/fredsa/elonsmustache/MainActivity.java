@@ -25,7 +25,6 @@ import android.widget.Toast;
 
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.AugmentedFace;
-import com.google.ar.core.Pose;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
@@ -57,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FaceArFragment arFragment;
 
+    private Texture paintTexture;
     private Texture mustacheTexture;
     private Material mustacheMaterial;
     private Renderable mustacheRenderable;
@@ -81,6 +81,12 @@ public class MainActivity extends AppCompatActivity {
         // the face mesh occlusion works correctly.
         sceneView.setCameraStreamRenderPriority(Renderable.RENDER_PRIORITY_FIRST);
 
+
+        // Face paint.
+        Texture.builder()
+                .setSource(this, R.drawable.mustachepaint)
+                .build()
+                .thenAccept(texture -> paintTexture = texture);
 
         // Elon's Mustache
         Texture.builder()
@@ -108,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
         scene.addOnUpdateListener(
                 (FrameTime frameTime) -> {
-                    if (mustacheRenderable == null || mustacheTexture == null) {
+                    if (mustacheRenderable == null || mustacheTexture == null || paintTexture == null) {
                         return;
                     }
 
@@ -121,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                             AugmentedFaceNode faceNode = new AugmentedFaceNode(face);
                             faceNode.setParent(scene);
                             faceNodeMap.put(face, faceNode);
+                            faceNode.setFaceMeshTexture(paintTexture);
 
                             Node node = new Node();
                             node.setName("mustache");
@@ -161,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
                                 Node mustacheNode = faceNode.getChildren().get(2);
                                 mustacheNode.setLocalPosition(pos);
+                                mustacheNode.setEnabled(false);
                                 break;
                         }
                     }
