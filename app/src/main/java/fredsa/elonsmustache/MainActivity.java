@@ -19,8 +19,12 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.ar.core.ArCoreApk;
@@ -49,15 +53,45 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener {
+    private GestureDetectorCompat mDetector;
+
+    enum Mode {
+        MUSTACHE_TEXTURE,
+        REFERENCE_TEXTURE,
+        MUSTACHE_3D,
+        ALL_OF_THE_THINGS;
+
+        private static Mode[] vals = values();
+
+        Mode next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
+
+    Mode mode = BuildConfig.DEBUG ? Mode.ALL_OF_THE_THINGS : Mode.MUSTACHE_TEXTURE;
+
+    class MyGestureListener extends GestureDetector.SimpleOnGestureListener {
+        private final String TAG = MyGestureListener.class.getSimpleName();
+
+        @Override
+
+        public boolean onDoubleTap(MotionEvent e) {
+            Log.d(TAG, "onDoubleTap: " + e);
+            mode = mode.next();
+            return false;
+        }
+    }
+
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final double MIN_OPENGL_VERSION = 3.0;
 
     private FaceArFragment arFragment;
 
-    private Texture paintTexture;
-    private Texture mustacheTexture;
+    private Texture referenceFaceTexture;
+    private Texture mustacheFaceTexture;
+    private Texture mustache3DTexture;
     private Material mustacheMaterial;
     private Renderable mustacheRenderable;
 
@@ -82,20 +116,26 @@ public class MainActivity extends AppCompatActivity {
         sceneView.setCameraStreamRenderPriority(Renderable.RENDER_PRIORITY_FIRST);
 
 
-        // Face paint.
+        // Reference face texture.
+        Texture.builder()
+                .setSource(this, R.drawable.reference_face_texture)
+                .build()
+                .thenAccept(texture -> referenceFaceTexture = texture);
+
+        // Mustache face texture.
         Texture.builder()
                 .setSource(this, R.drawable.mustachepaint)
                 .build()
-                .thenAccept(texture -> paintTexture = texture);
+                .thenAccept(texture -> mustacheFaceTexture = texture);
 
-        // Elon's Mustache
+        // Elon's Mustache.
         Texture.builder()
                 .setSource(this, R.drawable.mustache)
                 .build()
                 .thenAccept(texture -> {
-                    mustacheTexture = texture;
+                    mustache3DTexture = texture;
 
-                    MaterialFactory.makeTransparentWithTexture(this, mustacheTexture)
+                    MaterialFactory.makeTransparentWithTexture(this, mustache3DTexture)
                             .thenAccept(material -> {
                                 mustacheMaterial = material;
 
@@ -109,12 +149,20 @@ public class MainActivity extends AppCompatActivity {
                             });
                 });
 
+        if (BuildConfig.DEBUG) {
+            mDetector = new GestureDetectorCompat(this, new MyGestureListener());
+            sceneView.setOnTouchListener(this);
+        }
 
         Scene scene = sceneView.getScene();
 
         scene.addOnUpdateListener(
                 (FrameTime frameTime) -> {
-                    if (mustacheRenderable == null || mustacheTexture == null || paintTexture == null) {
+                    if (mustacheRenderable == null
+                            || mustache3DTexture == null
+                            || referenceFaceTexture == null
+                            || mustacheFaceTexture == null
+                            || referenceFaceTexture == null) {
                         return;
                     }
 
@@ -127,12 +175,11 @@ public class MainActivity extends AppCompatActivity {
                             AugmentedFaceNode faceNode = new AugmentedFaceNode(face);
                             faceNode.setParent(scene);
                             faceNodeMap.put(face, faceNode);
-                            faceNode.setFaceMeshTexture(paintTexture);
 
-                            Node node = new Node();
-                            node.setName("mustache");
-                            node.setParent(faceNode);
-                            node.setRenderable(mustacheRenderable);
+                            Node mustacheNode = new Node();
+                            mustacheNode.setName("mustache");
+                            mustacheNode.setParent(faceNode);
+                            mustacheNode.setRenderable(mustacheRenderable);
                         }
                     }
 
@@ -168,11 +215,34 @@ public class MainActivity extends AppCompatActivity {
 
                                 Node mustacheNode = faceNode.getChildren().get(2);
                                 mustacheNode.setLocalPosition(pos);
-                                mustacheNode.setEnabled(false);
-                                break;
+                                mustacheNode.setEnabled(mode == Mode.ALL_OF_THE_THINGS || mode == Mode.MUSTACHE_3D);
+                                switch (mode) {
+                                    case ALL_OF_THE_THINGS:
+                                    case REFERENCE_TEXTURE:
+                                        faceNode.setFaceMeshTexture(referenceFaceTexture);
+                                        break;
+                                    case MUSTACHE_TEXTURE:
+                                        faceNode.setFaceMeshTexture(mustacheFaceTexture);
+                                        break;
+                                    case MUSTACHE_3D:
+                                        faceNode.setFaceMeshTexture(null);
+                                        break;
+                                    default:
+                                        throw new IllegalArgumentException("Invalid mode: " + mode);
+                                }
                         }
                     }
                 });
+    }
+
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        Log.d(TAG, "onTouch2: ");
+        if (this.mDetector.onTouchEvent(event)) {
+            return true;
+        }
+        return false;
     }
 
     private static ModelRenderable makePlane(Vector3 size, Material material) {
