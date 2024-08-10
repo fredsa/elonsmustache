@@ -15,6 +15,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace "fredsa.elonsmustache"
     compileSdkVersion 28
     defaultConfig {
         applicationId "fredsa.elonsmustache"
