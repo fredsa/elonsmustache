@@ -13,3 +13,6 @@ local.properties
 .DS_Store
 
 *.sfb
+
+# Release builds.
+/app/release/
