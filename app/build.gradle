@@ -16,13 +16,13 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "fredsa.elonsmustache"
-    compileSdkVersion 28
+    compileSdkVersion 34
     defaultConfig {
         applicationId "fredsa.elonsmustache"
 
         // Sceneform requires minSdkVersion >= 24.
         minSdkVersion 24
-        targetSdkVersion 28
+        targetSdkVersion 34
         versionCode 3
         versionName "1.1"
     }
@@ -43,13 +43,16 @@ android {
 dependencies {
 
     // Provides ArFragment, and other Sceneform UX resources:
-    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.9.0"
+    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.17.1"
 
     // Use the Sceneform UX Package built from the source files included in the sceneformux folder.
     //api project(":sceneformux")
 
     // Alternatively, use ArSceneView without the UX dependency.
     //implementation "com.google.ar.sceneform:core:1.9.0"
+
+    // Explicitly include ARCore dependency.
+    implementation 'com.google.ar:core:1.44.0'
 
     implementation "com.android.support:appcompat-v7:28.0.0"
 }
