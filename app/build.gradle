@@ -23,8 +23,8 @@ android {
         // Sceneform requires minSdkVersion >= 24.
         minSdkVersion 24
         targetSdkVersion 34
-        versionCode 3
-        versionName "1.1"
+        versionCode 4
+        versionName "1.4"
     }
     // Sceneform libraries use language constructs from Java 8.
     // Add these compile options if targeting minSdkVersion < 26.
